@@ -1,0 +1,117 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id               String       @id @default(cuid())
+  email            String       @unique
+  password         String?
+  avatarUrl        String?
+  googleAccountId  String?      @unique
+  createdAt        DateTime     @default(now())
+  profile          UserProfile?
+  posts            Post[]
+  comments         Comment[]
+  likes            Like[]
+  messages         Message[]
+  chats            ChatParticipant[]
+}
+
+model UserProfile {
+  id        String   @id @default(cuid())
+  name      String
+  bio       String?
+  avatarUrl String?
+  userId    String   @unique
+  user      User     @relation(fields: [userId], references: [id])
+}
+
+model Post {
+  id         String    @id @default(cuid())
+  content    String
+  createdAt  DateTime  @default(now())
+  authorId   String
+  author     User      @relation(fields: [authorId], references: [id])
+  comments   Comment[]
+  likes      Like[]
+}
+
+
+model Comment {
+  id         String    @id @default(cuid())
+  content    String
+  createdAt  DateTime  @default(now())
+  postId     String
+  post       Post      @relation(fields: [postId], references: [id])
+  authorId   String
+  author     User      @relation(fields: [authorId], references: [id])
+  likes      Like[]
+}
+
+
+model Like {
+  id         String    @id @default(cuid())
+  postId     String?
+  commentId  String?
+  userId     String
+  user       User      @relation(fields: [userId], references: [id])
+  post       Post?     @relation(fields: [postId], references: [id])
+  comment    Comment?  @relation(fields: [commentId], references: [id])
+
+  @@unique([userId, postId])
+  @@unique([userId, commentId])
+}
+
+
+model Chat {
+  id           String           @id @default(cuid())
+  name         String?
+  createdAt    DateTime         @default(now())
+  messages     Message[]
+  participants ChatParticipant[]
+}
+
+
+model ChatParticipant {
+  id        String   @id @default(cuid())
+  userId    String
+  chatId    String
+  user      User     @relation(fields: [userId], references: [id])
+  chat      Chat     @relation(fields: [chatId], references: [id])
+
+  @@unique([userId, chatId])
+}
+
+
+model Message {
+  id         String     @id @default(cuid())
+  content    String
+  createdAt  DateTime   @default(now())
+  chatId     String
+  senderId   String
+  chat       Chat       @relation(fields: [chatId], references: [id])
+  sender     User       @relation(fields: [senderId], references: [id])
+  attachments Attachment[]
+}
+
+
+model Attachment {
+  id         String    @id @default(cuid())
+  url        String
+  type       String    // e.g., image, video, file
+  messageId  String
+  message    Message   @relation(fields: [messageId], references: [id])
+}
+
+
