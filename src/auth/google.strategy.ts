@@ -6,6 +6,7 @@ import { UserService } from '../user/user.service';
 import * as dotenv from 'dotenv';
 
 dotenv.config();
+
 @Injectable()
 export class GoogleStrategy extends PassportStrategy(Strategy, 'google') {
   constructor(
@@ -26,15 +27,20 @@ export class GoogleStrategy extends PassportStrategy(Strategy, 'google') {
     profile: any,
     done: VerifyCallback,
   ): Promise<any> {
-    const { emails } = profile;
+    const { emails, displayName, photos } = profile;
     const user = await this.userService.findByEmail(emails[0].value);
 
     if (!user) {
-      // Jika user tidak ada, buat user baru
+      // Jika user tidak ada, buat user baru beserta profilnya
       const newUser = await this.userService.create({
         email: emails[0].value,
         googleAccountId: profile.id,
-        avatarUrl: profile.photos[0].value,
+        avatarUrl: photos[0].value,
+        profile: {
+          create: {
+            name: displayName,
+          },
+        },
       });
       const jwt = await this.authService.createJwtToken(newUser);
       return done(null, { jwt });
