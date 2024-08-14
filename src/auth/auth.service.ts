@@ -14,7 +14,7 @@ export class AuthService {
   }
 
   async createJwtToken(user: any) {
-    const payload = { email: user.email, sub: user.id, avatarUrl: user.avatarUrl };
+    const payload = { email: user.email, userId: user.id, avatarUrl: user.avatarUrl };
     return this.jwtService.sign(payload);
   }
 }

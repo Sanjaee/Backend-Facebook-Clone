@@ -37,14 +37,16 @@ model UserProfile {
 }
 
 model Post {
-  id         String    @id @default(cuid())
-  content    String
-  createdAt  DateTime  @default(now())
-  authorId   String
-  author     User      @relation(fields: [authorId], references: [id])
-  comments   Comment[]
-  likes      Like[]
+  id          String    @id @default(cuid())
+  description String?   
+  url_post    String?
+  createdAt   DateTime  @default(now())
+  authorId    String
+  author      User      @relation(fields: [authorId], references: [id])
+  comments    Comment[]
+  likes       Like[]
 }
+
 
 
 model Comment {
